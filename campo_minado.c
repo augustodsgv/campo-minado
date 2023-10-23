@@ -1,28 +1,16 @@
+/*
+Programa : campo_minado.c
+Autor: Augustodsgv
+Descrição: Jogo campo_minado implementado em c
+Data: 23/10/2023
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include "campo_minado.h"
 
-
-#define fieldSize 10                // 18, no vscode parece um tamanho bem justo
-#define maximumFieldSize 44         // Há 52 posições horizontais (alfabeto minísculo depois maiúsculo) entretando a formatação acima disso fica zuada
-#define nomeArquivo "campo.txt"
-#define dificuldade 4       // 0 a 5
-
-const char alfabeto[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-int passo = 0;
-typedef struct celula{
-    int isBomb;
-    int isReveald;
-    int isMarked;
-    int nNeighBombs;
-}celula;
-
-typedef struct field{
-    celula vetor [fieldSize][fieldSize];
-    int nBombas;
-    int nReveald;
-}field;
 
 // Função que printa o campo de maneira formatada
 void printField(field campo){
@@ -150,7 +138,6 @@ void povoaCampoAleatorio(field * campo){
         }
 }
 
-
 // Função que calcula quantos bombas há na vizinhança de uma célula
 void findNeighBombs(field * campo){
     for (int i = 0; i < fieldSize; i++){        // Loop pela matriz
@@ -177,7 +164,6 @@ void findNeighBombs(field * campo){
         }
     }
 }
-
 
 // Converte um input em caractere (alfabeto de a - z e A - Z para um número das coordenadas inteiras da matriz)
 int letterToInt(char letra){
@@ -377,45 +363,15 @@ int firstInput(field * campo){
 }
 
 
-
 int main(){
     field campo;
-    int x, y;
 
     // povoaCampoArquivo(&campo);
     povoaCampoAleatorio(&campo);
     
     do{
         printField(campo);
-    }while(!firstInput(&campo));
-    // /*
-
-    // O primeiro input deve ser livre de bombas, e liberar uma área ao redor do primeiro ponto.
-    // Por hora essa área será de 3x3
-
-    /*
-    +---+---+---+---+---+---+---+---+---+---+
-    |   |   | ò |   | ò |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   | ò |   |   |   |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   |   |   |   |   |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   | ò | ò | # | # | # |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   | ò |   | # | X | # |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   |   | ò | # | # | # |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   | ò |   |   |   |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   |   |   |   | ò |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   | ò | ò |   |   |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    |   | ò |   | ò |   |   |   | ò |   | ò |
-    +---+---+---+---+---+---+---+---+---+---+
-    */    
+    }while(!firstInput(&campo));    
 
     while(1){
         printf("Faltam %d bombas a serem encontradas\n", campo.nBombas - campo.nReveald);
