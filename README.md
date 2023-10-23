@@ -1,7 +1,7 @@
 # campo-minado 💣
 ## O jogo
 O jogo campo minado é um clássico dos jogos eletrônicos. O jogo consiste de uma matriz quadrada com "células" que podem ter bombas ou posições livres.\
-Cada célula possui um número que indica quantas bombas tem nas 8 posições ao seu redor. O objetivo do jogo é encontrar todas as posções livres sem que\
+Cada célula possui um número que indica quantas bombas tem nas 8 posições ao seu redor. O objetivo do jogo é encontrar todas as posições livres sem que\
 se encontre nenhuma bomba. Caso uma bomba seja encontrada, é fim de jogo.
 
 ## Comandos
