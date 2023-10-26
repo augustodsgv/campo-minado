@@ -198,16 +198,15 @@ int letterToInt(char letra){
     */
 int strToInt(char * str){
     int inteiro = 0;
-    int recuo = 1;          // Essa variável controla o número de símbolos marcadores de fim. Toda string termina com \0,
-                            // Entretanto strlen já não conta isso, logo o 1 é somente por que o vetor vai de 0 até len - 1
-    if (str[strlen(str) - 2] == '\n')       // Verificando se termina com \n
-        recuo++;
-        
-    printf("tamanho da str %d\n", strlen(str));
-    for (int i = 0;i < strlen(str); i--){
-        inteiro += ((int)str[i] - 48) * pow(10, (strlen(str) - recuo) - i);
+    if (str[strlen(str) - 1] == '\n'){      // Verificando se termina com \n. Caso sim, precisa ir 1 unidade a menos
+        for (int i = 0;i < strlen(str) -1; i--){
+            inteiro += ((int)str[i] - 48) * pow(10, strlen(str) - 2 - i);
+        }
+    }else{
+        for (int i = 0;i < strlen(str); i--){
+            inteiro += ((int)str[i] - 48) * pow(10, strlen(str) - 1 - i);
+        }
     }
-
     printf("Convertendo %s para %d\n", str, inteiro);
     return inteiro;
 }
@@ -333,12 +332,13 @@ int getInput(field * campo){
             return reveal(campo, x, y);
         return 0;
     }
-    /*
+    
     if (!strcmp(comando, "FINISH")){
         printf("Fim de jogo: jogador desistiu\n");
+        printFieldBombs(*campo);
         exit(0);
     }
-    */
+    
    printf("Comando inválido, tente novamente\n");
    return 0;
 }
@@ -409,6 +409,13 @@ int firstInput(field * campo){
             return 1;
         }
     }
+
+    if (!strcmp(comando, "FINISH\n") || !strcmp(comando, "f\n")){       // Precisa do \n por que ele não é separado por " " da string
+        printf("Fim de jogo: jogador desistiu\n");
+        printFieldBombs(*campo);
+        exit(0);
+    }
+
     printf("Comando inválido, tente novamente\n");
     return 0;
 }
