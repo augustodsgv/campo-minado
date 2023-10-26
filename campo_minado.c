@@ -204,7 +204,6 @@ int strToInt(char * str){
             inteiro += ((int)str[i] - 48) * pow(10, strlen(str) - 1 - i);
         }
     }
-    printf("Convertendo %s para %d\n", str, inteiro);
     return inteiro;
 }
 
@@ -246,15 +245,12 @@ void unmark(field * campo, int x, int y){
     campo->vetor[y][x].isMarked = 0;                // X E Y SÃO INVERTIDOS!!!
 }
 
-
 int openRecDepth(field * campo, int x, int y){
     if(campo->vetor[y][x].isBomb)   return 0;
     if(campo->vetor[y][x].isOpened) return 0;
-    printf("entrou aqui\n");
 
     campo->vetor[y][x].isOpened = 1;
     campo->nReveald++;
-    printField(*campo);
 
     // Fazendo a chamada recursiva dos vizinhos
     if(y - 1 >= 0) openRecDepth(campo, x, y - 1);
@@ -266,9 +262,6 @@ int openRecDepth(field * campo, int x, int y){
 }
 
 int open(field * campo, int x, int y){
-    // campo->vetor[y][x].isOpened = 1;
-    // campo->nReveald++;
-
     // Verificando o caso de bombas
     if(campo->vetor[y][x].isBomb){
         printf("fim de jogo: achou uma bomba!!\n");
@@ -385,10 +378,8 @@ int firstInput(field * campo){
     }
 
     if (!strcmp(comando, "OPEN") || !strcmp(comando, "o")){
-        if (treatCoord(campo, input, &x, &y)){
-            printf("entrou open \n");
-            
-            campo->vetor[x][y].isBomb = 0;           // Transformando o ponto clicado numa célula livre no hard-code e reve
+        if (treatCoord(campo, input, &x, &y)){            
+            campo->vetor[y][x].isBomb = 0;           // Transformando o ponto clicado numa célula livre no hard-code e reve
 
             findNeighBombs(campo);                  // Fazendo a contagem das bomba depois de determinar o ponto inicial, visto que se este foi uma bomba muda a contagem
             openRecDepth(campo, x, y);
@@ -427,13 +418,6 @@ int main(int argc, char *argv[]){
             break;
     }
 
-    /*
-    if (argc > 1){
-        fieldSize = strToInt(argv[1]);
-    }else{
-        fieldSize = 10;
-    }
-    */
 
     povoaCampoAleatorio(&campo, fieldSize, dificulty);
     
