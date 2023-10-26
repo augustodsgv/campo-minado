@@ -7,7 +7,8 @@ Data: 23/10/2023
 #ifndef CAMPO_MINADO
 #define CAMPO_MINADO
 
-#define fieldSize 10                // 18, no vscode parece um tamanho bem justo
+// #define fieldSize 10                // 18, no vscode parece um tamanho bem justo
+#define alfabetoSize 52
 #define maximumFieldSize 44         // Há 52 posições horizontais (alfabeto minísculo depois maiúsculo) entretando a formatação acima disso fica zuada
 #define nomeArquivo "campo.txt"
 #define dificuldade 4       // 0 a 5
@@ -17,30 +18,33 @@ const char alfabeto[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
 // Registro que representa a célula do campo
 typedef struct celula{
     int isBomb;
-    int isReveald;
+    int isOpened;
     int isMarked;
     int nNeighBombs;
 }celula;
 
 // Registro que representa o campo como um todo
 typedef struct field{
-    celula vetor [fieldSize][fieldSize];
+    celula ** vetor;
     int nBombas;
     int nReveald;
+    int fieldSize;
 }field;
 
 // Funções
 void printField(field campo);
 void printFieldBombs(field campo);
-void povoaCampoArquivo(field * campo);
-void povoaCampoAleatorio(field * campo);
+void povoaCampoArquivo(field * campo, int fieldSize);
+void povoaCampoAleatorio(field * campo, int fieldSize, int dificulty);
 void findNeighBombs(field * campo);
 int letterToInt(char letra);
-int getInputOld(int * x, int * y);
+int getInputOld(field * campo, int * x, int * y);
 void mark(field * campo, int x, int y);
 void unmark(field * campo, int x, int y);
-int treatCoord(char * input, int * x, int * y);
+int treatCoord(field * campo, char * input, int * x, int * y);
 int getInput(field * campo);
 int firstInput(field * campo);
+
+int openRecDepth(field * campo, int x, int y);
 
 #endif /*CAMPO_MINADO*/

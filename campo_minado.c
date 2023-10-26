@@ -29,7 +29,7 @@ void printField(field campo){
         for(int j = 0; j < campo.fieldSize; j++){         // Printando o campo
             celula celulaAtual = campo.vetor[i][j];
             // Caso esteja oculta
-            if (!celulaAtual.isReveald){
+            if (!celulaAtual.isOpened){
                 // Caso esteja limpa
                 if (!celulaAtual.isMarked)
                     printf("| . ");
@@ -114,7 +114,7 @@ void povoaCampoArquivo(field * campo, int fieldSize){
 
             campo->vetor[i][j].nNeighBombs = 0;                        // Iniciando com 0 pois não se sabe ainda quantos vizinhos há
             campo->vetor[i][j].isBomb = (int)campoAtual - 48;          // Em ascii, '0' é 48 e '1' é 49
-            campo->vetor[i][j].isReveald = 0;
+            campo->vetor[i][j].isOpened = 0;
             campo->vetor[i][j].isMarked = 0;            
         }
     }
@@ -123,9 +123,7 @@ void povoaCampoArquivo(field * campo, int fieldSize){
 // Função que cria um campo com bombas espalhadas de forma aleatória
 // Está sendo usado uma proporção de 2 célula livres para 1 bomba, pois 50% 50% parecia muito difícil
 // void povoaCampoAleatorio(field * campo, int dificuldade){
-void povoaCampoAleatorio(field * campo, int fieldSize){
-
-
+void povoaCampoAleatorio(field * campo, int fieldSize, int dificulty){
     // Inicializando parâmetros do campo
     campo->nBombas = 0;
     campo->nReveald = 0;
@@ -143,12 +141,11 @@ void povoaCampoAleatorio(field * campo, int fieldSize){
     // Povoando o campo
     for(int i = 0; i < campo->fieldSize; i++)
         for(int j = 0; j < campo->fieldSize; j++){
-            campo->vetor[i][j].isBomb = !(rand() % (7 - dificuldade));                 // O resto da divisão de 7, será ou 0 ou um número inteiro. Dessa forma, quando maior for o divisor, men
+            campo->vetor[i][j].isBomb = !(rand() % (7 - dificulty));                 // O resto da divisão de 7, será ou 0 ou um número inteiro. Dessa forma, quando maior for o divisor, men
             campo->vetor[i][j].nNeighBombs = 0;                     // Iniciando com 0 pois não se sabe ainda quantos vizinhos há
-            campo->vetor[i][j].isReveald = 0;
+            campo->vetor[i][j].isOpened = 0;
             campo->vetor[i][j].isMarked = 0;
         }
-    
 }
 
 // Função que calcula quantos bombas há na vizinhança de uma célula
@@ -157,7 +154,7 @@ void findNeighBombs(field * campo){
         for (int j = 0; j < campo->fieldSize; j++){
             // Aqui usaremos uma abordagem de, quando acharmos uma bomba, adicionamos 1 à quantidade de bombas vizinhas
             if (campo->vetor[i][j].isBomb){
-                campo->nBombas++;       // Adicionando ao contador de bombas  
+                campo->nBombas++;       // Adicionando ao contador de bombas
                 // Andando na matriz 3x3 dos vizinhos da célula 
                 for(int k = i - 1; k <= i + 1; k++){     // Controle vertical, indo de i - 1 (linha de cima) até i + 1 (linha de baixo)
                     // Verificando se a linha não está estourando para cima ou para baixo
@@ -239,23 +236,46 @@ int getInputOld(field * campo, int * x, int * y){
     return 1;   // Caso válido
 }
 
+// Função que faz uma marcação numa célula
 void mark(field * campo, int x, int y){
     campo->vetor[y][x].isMarked = 1;                // X E Y SÃO INVERTIDOS!!!
 }
 
+// Função que remove a marcação feita em uma célula
 void unmark(field * campo, int x, int y){
     campo->vetor[y][x].isMarked = 0;                // X E Y SÃO INVERTIDOS!!!
 }
 
-int reveal(field * campo, int x, int y){
-    campo->vetor[y][x].isReveald = 1;
+
+int openRecDepth(field * campo, int x, int y){
+    if(campo->vetor[y][x].isBomb)   return 0;
+    if(campo->vetor[y][x].isOpened) return 0;
+    printf("entrou aqui\n");
+
+    campo->vetor[y][x].isOpened = 1;
     campo->nReveald++;
+    printField(*campo);
+
+    // Fazendo a chamada recursiva dos vizinhos
+    if(y - 1 >= 0) openRecDepth(campo, x, y - 1);
+    if(x - 1 >= 0) openRecDepth(campo, x - 1, y);
+    if(y + 1 < campo->fieldSize) openRecDepth(campo, x, y + 1);
+    if(x + 1 < campo->fieldSize) openRecDepth(campo, x + 1, y);
+
+   return 1;
+}
+
+int open(field * campo, int x, int y){
+    // campo->vetor[y][x].isOpened = 1;
+    // campo->nReveald++;
 
     // Verificando o caso de bombas
     if(campo->vetor[y][x].isBomb){
         printf("fim de jogo: achou uma bomba!!\n");
         printFieldBombs(*campo);
         exit(1);
+    }else{
+        openRecDepth(campo, x, y);
     }
     if (campo->nBombas == campo->nReveald){
         printf("Parabéns!!! Você encontrou todas as %d casas vazias!\n");
@@ -329,11 +349,11 @@ int getInput(field * campo){
 
     if (!strcmp(comando, "OPEN") || !strcmp(comando, "o")){
         if (treatCoord(campo, input, &x, &y))
-            return reveal(campo, x, y);
+            return open(campo, x, y);
         return 0;
     }
     
-    if (!strcmp(comando, "FINISH")){
+    if (!strcmp(comando, "FINISH\n") || !strcmp(comando, "f\n")){       // Precisa do \n por que ele não é separado por " " da string
         printf("Fim de jogo: jogador desistiu\n");
         printFieldBombs(*campo);
         exit(0);
@@ -343,10 +363,9 @@ int getInput(field * campo){
    return 0;
 }
 
-
+// Função que faz o primeiro input, que é diferente pois o primeiro clique sempre é uma casa vazia
 int firstInput(field * campo){
     int x, y;
-    int xMin, xMax, yMin, yMax;         // Variáveis referentes à área ao redor do clique inicial
 
     char input[20];
     char * comando;        // O comando tem a sequência [comando][coordX][coordY]
@@ -367,45 +386,13 @@ int firstInput(field * campo){
 
     if (!strcmp(comando, "OPEN") || !strcmp(comando, "o")){
         if (treatCoord(campo, input, &x, &y)){
-            // Calculando as coordenadas horizontais
-            if (y < 1){                // Caso a área ao redor do p. inicial esteja acima da área do campo
-                yMin = y;
-                yMax = y + 2;
-            }else{                      
-                if (y == campo->fieldSize - 1){      // Caso a área ao redor do p. inicial esteja abaiyo da área do campo
-                    yMin = y - 2;
-                    yMax = y;
-                }else{                   // Caso esteja totalmente dentro da área do campo  
-                    yMin = y - 1;
-                    yMax = y + 1;
-                }
-            }
-
-            // Calculando as coordenadas verticais
-            if (x < 1){                // Caso a área ao redor do p. inicial esteja à esquerdo da área do campo
-                xMin = x;
-                xMax = x + 2;
-            }else{                      
-                if (x == campo->fieldSize - 1){      // Caso a área ao redor do p. inicial esteja à direita da área do campo
-                    xMin = x - 2;
-                    xMax = x;
-                }else{                   // Caso esteja totalmente dentro da área do campo  
-                    xMin = x - 1;
-                    xMax = x + 1;
-                }
-            }
-            // printf("reveladas as coordenadas x entre %d e %d e y entre %d e %d\n", xMin, xMax, yMin, yMax);
+            printf("entrou open \n");
+            
             campo->vetor[x][y].isBomb = 0;           // Transformando o ponto clicado numa célula livre no hard-code e reve
 
             findNeighBombs(campo);                  // Fazendo a contagem das bomba depois de determinar o ponto inicial, visto que se este foi uma bomba muda a contagem
-
-            for (int i = yMin; i <= yMax; i++)
-                for (int j = xMin; j <= xMax; j++){
-                    if(!campo->vetor[i][j].isBomb){      // Só revela se for livre
-                        campo->vetor[i][j].isReveald = 1;
-                        campo->nReveald++;
-                    }
-                }
+            openRecDepth(campo, x, y);
+              
             return 1;
         }
     }
@@ -423,15 +410,32 @@ int firstInput(field * campo){
 
 int main(int argc, char *argv[]){
     field campo;
-    int fieldSize;
+    int fieldSize, dificulty;
 
+    switch(argc){
+        case 1:
+            fieldSize = 10;                 // Nenhum argumento
+            dificulty = 5;
+            break;
+        case 2:                             // Somente de dificuldade
+            fieldSize = strToInt(argv[1]);
+            dificulty = 5;
+            break;
+        case 3:
+            fieldSize = strToInt(argv[1]);
+            dificulty = strToInt(argv[2]);
+            break;
+    }
+
+    /*
     if (argc > 1){
         fieldSize = strToInt(argv[1]);
     }else{
         fieldSize = 10;
     }
+    */
 
-    povoaCampoAleatorio(&campo, fieldSize);
+    povoaCampoAleatorio(&campo, fieldSize, dificulty);
     
     do{
         printField(campo);
