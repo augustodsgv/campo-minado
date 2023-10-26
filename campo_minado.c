@@ -201,9 +201,12 @@ int getInputOld(int * x, int * y){
     return 1;   // Caso válido
 }
 
-int mark(field * campo, int x, int y){
+void mark(field * campo, int x, int y){
     campo->vetor[y][x].isMarked = 1;                // X E Y SÃO INVERTIDOS!!!
-    return 1;
+}
+
+void unmark(field * campo, int x, int y){
+    campo->vetor[y][x].isMarked = 0;                // X E Y SÃO INVERTIDOS!!!
 }
 
 int reveal(field * campo, int x, int y){
@@ -269,20 +272,29 @@ M [coordX][coordY]                         -> Comando MARK
 */
 
 int getInput(field * campo){
+    int x, y;
     char input[20];
     char * comando;        // O comando tem a sequência [comando][coordX][coordY]
     fgets(input, 20, stdin);
     comando = strtok(input, " ");
 
     if (!strcmp(comando, "MARK") || !strcmp(comando, "m")){
-        int x, y;
-        if (treatCoord(input, &x, &y))
-            return mark(campo, x, y);
+        if (treatCoord(input, &x, &y)){
+            mark(campo, x, y);
+            return 1;
+            }
+        return 0;
+    }
+
+    if (!strcmp(comando, "UNMARK") || !strcmp(comando, "u")){
+        if (treatCoord(input, &x, &y)){
+            unmark(campo, x, y);
+            return 1;
+            }
         return 0;
     }
 
     if (!strcmp(comando, "OPEN") || !strcmp(comando, "o")){
-        int x, y;
         if (treatCoord(input, &x, &y))
             return reveal(campo, x, y);
         return 0;
@@ -293,6 +305,7 @@ int getInput(field * campo){
         exit(0);
     }
     */
+   printf("Comando inválido, tente novamente\n");
    return 0;
 }
 
@@ -309,6 +322,12 @@ int firstInput(field * campo){
     if (!strcmp(comando, "MARK") || !strcmp(comando, "m")){
         if (treatCoord(input, &x, &y))
             mark(campo, x, y);
+        return 0;
+    }
+
+    if (!strcmp(comando, "UNMARK") || !strcmp(comando, "u")){
+        if (treatCoord(input, &x, &y))
+            unmark(campo, x, y);
         return 0;
     }
 
@@ -348,18 +367,16 @@ int firstInput(field * campo){
 
             for (int i = yMin; i <= yMax; i++)
                 for (int j = xMin; j <= xMax; j++){
-                    printf("chegando na célula %d %d\n", i, j);
-
                     if(!campo->vetor[i][j].isBomb){      // Só revela se for livre
-                        printf("revelando a célula %d %d\n", i, j);
                         campo->vetor[i][j].isReveald = 1;
                         campo->nReveald++;
                     }
                 }
-            }
+            return 1;
         }
-    return 1;
-    
+    }
+    printf("Comando inválido, tente novamente\n");
+    return 0;
 }
 
 
