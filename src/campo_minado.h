@@ -27,7 +27,8 @@ typedef struct celula{
 typedef struct field{
     celula ** vetor;
     int nBombas;
-    int nReveald;
+    int nMarked;
+    int nOpened;
     int fieldSize;
 }field;
 
