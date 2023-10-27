@@ -11,6 +11,7 @@ Data: 23/10/2023
 #include <string.h>
 #include <math.h>
 #include "campo_minado.h"
+#include "cores.h"
 
 
 // Função que printa o campo de maneira formatada
@@ -34,11 +35,11 @@ void printField(field campo){
                 if (!celulaAtual.isMarked)
                     printf("| . ");
                 else    // Caso esteja marcada
-                    printf("| # ");
+                    printf("| "COLOR_VERMELHO"# " COLOR_RESET);
             }else{      // Caso a celula esteja exibida
                 // Caso não seja uma bomba, será exibido o número de vizinhos
                 if (!celulaAtual.isBomb)
-                    printf("| %d ", celulaAtual.nNeighBombs);
+                    printf("| " COLOR_VERDE "%d " COLOR_RESET, celulaAtual.nNeighBombs);
                 else        // Caso seja uma bomba
                     printf("| ò ");
             }
@@ -100,7 +101,8 @@ As colunas são separadas por espaço, as linhas por \n
 void povoaCampoArquivo(field * campo, int fieldSize){
     // Inicializando parâmetros do campo
     campo->nBombas = 0;
-    campo->nReveald = 0;
+    campo->nOpened = 0;
+    campo->nMarked = 0;
     campo->fieldSize = fieldSize;
 
     char campoAtual;
@@ -126,7 +128,8 @@ void povoaCampoArquivo(field * campo, int fieldSize){
 void povoaCampoAleatorio(field * campo, int fieldSize, int dificulty){
     // Inicializando parâmetros do campo
     campo->nBombas = 0;
-    campo->nReveald = 0;
+    campo->nOpened = 0;
+    campo->nMarked = 0;
     campo->fieldSize = fieldSize;
 
     // Alocando o campo
@@ -238,11 +241,14 @@ int getInputOld(field * campo, int * x, int * y){
 // Função que faz uma marcação numa célula
 void mark(field * campo, int x, int y){
     campo->vetor[y][x].isMarked = 1;                // X E Y SÃO INVERTIDOS!!!
+    campo->nMarked++;
 }
 
 // Função que remove a marcação feita em uma célula
 void unmark(field * campo, int x, int y){
     campo->vetor[y][x].isMarked = 0;                // X E Y SÃO INVERTIDOS!!!
+    campo->nMarked--;
+
 }
 
 int openRecDepth(field * campo, int x, int y){
@@ -250,7 +256,7 @@ int openRecDepth(field * campo, int x, int y){
     if(campo->vetor[y][x].isOpened) return 0;
 
     campo->vetor[y][x].isOpened = 1;
-    campo->nReveald++;
+    campo->nOpened++;
 
     // Fazendo a chamada recursiva dos vizinhos
     if(y - 1 >= 0) openRecDepth(campo, x, y - 1);
@@ -270,7 +276,7 @@ int open(field * campo, int x, int y){
     }else{
         openRecDepth(campo, x, y);
     }
-    if (campo->nBombas == campo->nReveald){
+    if (campo->nBombas == (pow(campo->fieldSize, 2) - campo->nOpened)){
         printf("Parabéns!!! Você encontrou todas as %d casas vazias!\n");
         exit(1);
     }
@@ -352,7 +358,7 @@ int getInput(field * campo){
         exit(0);
     }
     
-   printf("Comando inválido, tente novamente\n");
+   printf("Comando \"%s\" inválido, tente novamente\n", input);
    return 0;
 }
 
@@ -426,7 +432,7 @@ int main(int argc, char *argv[]){
     }while(!firstInput(&campo));    
 
     while(1){
-        printf("Faltam %d bombas a serem encontradas\n", campo.nBombas - campo.nReveald);
+        printf("Faltam %d bombas a serem encontradas\n", campo.nBombas - campo.nMarked);
         printField(campo);
 
         while(!getInput(&campo));
